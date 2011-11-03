@@ -1,8 +1,44 @@
 #include "ofMain.h"
 
 #include "ofxNSGLView.h"
+#include "ofAppBaseWindow.h"
 
-static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext);
+static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,  const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext);
+
+static bool bEnableSetupScreen = true;
+static int nFrameCount = 0;
+
+class ofxNSGLViewWindowProxy : public ofAppBaseWindow
+{
+public:
+	
+	NSView *view;
+	
+	ofxNSGLViewWindowProxy(NSView *view_)
+	{
+		view = view_;
+	}
+	
+	int getWidth()
+	{
+		
+		return view.bounds.size.width;
+	}
+	
+	int getHeight()
+	{
+		return view.bounds.size.height;
+	}
+};
+
+static ofPtr<ofxNSGLViewWindowProxy> window_proxy;
+
+static void setCurrentWindow(NSView *view)
+{
+	window_proxy = ofPtr<ofxNSGLViewWindowProxy>(new ofxNSGLViewWindowProxy(view));
+	ofSetupOpenGL(window_proxy, view.frame.size.width, view.frame.size.height, OF_WINDOW);
+}
+
 
 @interface ofxNSGLView ()
 - (void) initGL;
@@ -11,8 +47,6 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 @end
 
 @implementation ofxNSGLView
-
-@synthesize enableOfNotifiy;
 
 + (NSOpenGLPixelFormat*)getPixelFormat
 {
@@ -58,13 +92,12 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	[self exit];
 	
 	CVDisplayLinkRelease(displayLink);
+	
 	[super dealloc];
 }
 
 - (void) prepareOpenGL
 {
-	self.enableOfNotifiy = NO;
-	
 	[super prepareOpenGL];
 	
 	[self initGL];
@@ -88,8 +121,11 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	
 	[[self window] makeFirstResponder:self];
 	
+	ofSetCurrentRenderer(ofPtr<ofBaseRenderer>(new ofGLRenderer()));
+	setCurrentWindow(self);
+	
 	[self setup];
-	if (enableOfNotifiy) ofNotifySetup();
+	ofNotifySetup();
 }
 
 - (CVReturn) getFrameForTime:(const CVTimeStamp*)outputTime
@@ -116,17 +152,29 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	
 	CGLLockContext(cglContext);
 	
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
 	[self update];
-	if (enableOfNotifiy) ofNotifyUpdate();
+	ofNotifyUpdate();
+
+	
+	NSRect b = self.bounds;
+	ofViewport(0, 0, b.size.width, b.size.height);
+	float * bgPtr = ofBgColorPtr();
+	bool bClearAuto = ofbClearBg();
+	
+	if (bClearAuto == true || nFrameCount < 3)
+	{
+		ofClear(bgPtr[0]*255,bgPtr[1]*255,bgPtr[2]*255, bgPtr[3]*255);
+	}
+		
+	if(bEnableSetupScreen) ofSetupScreen();
 	
 	[self draw];
-	if (enableOfNotifiy) ofNotifyDraw();
+	ofNotifyDraw();
 	
 	CGLFlushDrawable(cglContext);
 	CGLUnlockContext(cglContext);
+	
+	nFrameCount++;
 }
 
 - (void) reshape
@@ -148,7 +196,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMousePressed:p button:[theEvent buttonNumber]];
-	if (enableOfNotifiy) ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
+	ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
@@ -156,7 +204,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMouseDragged:p button:[theEvent buttonNumber]];
-	if (enableOfNotifiy) ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
+	ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
@@ -164,7 +212,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMouseReleased:p button:[theEvent buttonNumber]];
-	if (enableOfNotifiy) ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
+	ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
 }
 
 - (void)mouseMoved:(NSEvent *)theEvent
@@ -172,7 +220,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMouseMoved:p];
-	if (enableOfNotifiy) ofNotifyMouseMoved(p.x, p.y);
+	ofNotifyMouseMoved(p.x, p.y);
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
@@ -180,7 +228,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMousePressed:p button:[theEvent buttonNumber]];
-	if (enableOfNotifiy) ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
+	ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
 }
 
 - (void)rightMouseDragged:(NSEvent *)theEvent
@@ -188,7 +236,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMouseDragged:p button:[theEvent buttonNumber]];
-	if (enableOfNotifiy) ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
+	ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
@@ -196,7 +244,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMouseReleased:p button:[theEvent buttonNumber]];
-	if (enableOfNotifiy) ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
+	ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
@@ -204,7 +252,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMousePressed:p button:[theEvent buttonNumber]];
-	if (enableOfNotifiy) ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
+	ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
 }
 
 - (void)otherMouseDragged:(NSEvent *)theEvent
@@ -212,7 +260,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMouseDragged:p button:[theEvent buttonNumber]];
-	if (enableOfNotifiy) ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
+	ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
 }
 
 - (void)otherMouseUp:(NSEvent *)theEvent
@@ -220,21 +268,21 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTime
 	NSPoint p = [theEvent locationInWindow];
 	p.y = self.bounds.size.height - p.y;
 	[self onMouseReleased:p button:[theEvent buttonNumber]];
-	if (enableOfNotifiy) ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
+	ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
 }
 
 - (void)keyDown:(NSEvent *)theEvent
 {
 	const char *c = [[theEvent charactersIgnoringModifiers] UTF8String];
 	[self onKeyPressed:c[0]];
-	if (enableOfNotifiy) ofNotifyKeyPressed(c[0]);
+	ofNotifyKeyPressed(c[0]);
 }
 
 - (void)keyUp:(NSEvent *)theEvent
 {
 	const char *c = [[theEvent charactersIgnoringModifiers] UTF8String];
 	[self onKeyReleased:c[0]];
-	if (enableOfNotifiy) ofNotifyKeyReleased(c[0]);
+	ofNotifyKeyReleased(c[0]);
 }
 
 #pragma mark oF like API

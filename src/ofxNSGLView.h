@@ -5,10 +5,7 @@
 
 @interface ofxNSGLView : NSOpenGLView {
 	CVDisplayLinkRef displayLink;
-	BOOL enableOfNotifiy;
 }
-
-@property (assign) BOOL enableOfNotifiy;
 
 - (void)setup;
 - (void)update;
