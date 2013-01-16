@@ -113,6 +113,8 @@ static void makeCurrentView(ofxNSGLView *view)
 	window_proxy->view = view;
 }
 
+static NSOpenGLContext *_context = nil;
+
 @interface ofxNSGLView ()
 - (void) initGL;
 - (void) drawView;
@@ -128,8 +130,17 @@ static void makeCurrentView(ofxNSGLView *view)
 	
 	if (self)
 	{
+		if (_context == nil)
+		{
+			_context = [self openGLContext];
+		}
+		else
+		{
+			self.openGLContext = [[NSOpenGLContext alloc] initWithFormat:self.pixelFormat shareContext:_context];
+		}
+		
 		GLint double_buffer = 0;
-		[[self pixelFormat] getValues:&double_buffer forAttribute:NSOpenGLPFADoubleBuffer forVirtualScreen:0];
+		[self.pixelFormat getValues:&double_buffer forAttribute:NSOpenGLPFADoubleBuffer forVirtualScreen:0];
 		
 		if (double_buffer == 0)
 			ofLogWarning("ofxNSGLView") << "double buffer is disabled";
@@ -228,9 +239,12 @@ static void makeCurrentView(ofxNSGLView *view)
 	if (v)
 	{
 		[[self window] setAcceptsMouseMovedEvents:YES];
+		[[self window] makeFirstResponder:self];
 	}
 	else
 	{
+		[[self window] setAcceptsMouseMovedEvents:NO];
+		[[self window] makeFirstResponder:nil];
 	}
 }
 
@@ -250,7 +264,8 @@ static void makeCurrentView(ofxNSGLView *view)
 	[[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
 	
 	GLenum err = glewInit();
-	if (GLEW_OK != err) {
+	if (GLEW_OK != err)
+	{
 		NSLog(@"GLEW init error... bailing");
 		exit(1);
 	}
