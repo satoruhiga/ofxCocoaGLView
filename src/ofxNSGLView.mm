@@ -120,6 +120,8 @@ static void makeCurrentView(ofxNSGLView *view)
 
 @implementation ofxNSGLView
 
+@synthesize mouseX, mouseY;
+
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
 	self = [super initWithCoder:aDecoder];
@@ -139,6 +141,11 @@ static void makeCurrentView(ofxNSGLView *view)
 		
 		[self setFrameRate:60];
 		lastFrameTime = 0;
+		
+		[NSEvent addLocalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
+			[self mouseMoved:e];
+			return e;
+		}];
 	}
 	
 	return self;
@@ -220,19 +227,22 @@ static void makeCurrentView(ofxNSGLView *view)
 {
 	if (v)
 	{
-		[[self window] makeFirstResponder:self];
 		[[self window] setAcceptsMouseMovedEvents:YES];
 	}
 	else
 	{
-		if ([[self window] firstResponder] == self)
-			[[self window] makeFirstResponder:nil];
 	}
 }
 
 - (void)initGL
 {
 	[self enableWindowEvents:YES];
+	
+	// init mouse pos
+	NSPoint p = [self.window convertScreenToBase:[NSEvent mouseLocation]];
+	NSPoint m = [self convertPoint:p fromView:nil];
+	mouseX = m.x;
+	mouseY = self.frame.size.height - m.y;
 
 	BEGIN_OPENGL();
 
@@ -341,7 +351,13 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (NSPoint)pointFromEvent:(NSEvent*)theEvent
 {
 	NSPoint p = [theEvent locationInWindow];
-	return NSMakePoint(p.x, self.bounds.size.height - p.y);
+	p = [self convertPoint:p fromView:nil];
+	p.y = self.bounds.size.height - p.y;
+	
+	mouseX = p.x;
+	mouseY = p.y;
+	
+	return p;
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
@@ -479,21 +495,6 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (void)onMouseReleased:(NSPoint)p button:(int)button {}
 - (void)onWindowResized:(NSSize)size {}
 
-- (BOOL)acceptsFirstResponder
-{
-	return YES;
-}
-
-- (BOOL)becomeFirstResponder
-{
-	return YES;
-}
-
-- (BOOL)resignFirstResponder
-{
-	return YES;
-}
-
 //
 
 - (void)setTranslucent:(BOOL)v
@@ -512,6 +513,21 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (BOOL)isOpaque
 {
 	return !translucent;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+	return YES;
+}
+
+- (BOOL)becomeFirstResponder
+{
+	return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+	return YES;
 }
 
 @end

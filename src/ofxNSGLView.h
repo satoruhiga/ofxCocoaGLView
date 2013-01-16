@@ -20,7 +20,12 @@
 	
 	float lastUpdateTime;
 	float lastFrameTime;
+	
+	float mouseX, mouseY;
 }
+
+@property (assign, readonly) float mouseX;
+@property (assign, readonly) float mouseY;
 
 - (void)setup;
 - (void)update;
@@ -47,5 +52,7 @@
 
 - (void)enableDisplayLink:(BOOL)v;
 - (void)enableWindowEvents:(BOOL)v;
+
+//
 
 @end
