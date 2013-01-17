@@ -11,7 +11,6 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-	NSLog(@"%@", self.window.contentView);
 }
 
 @end

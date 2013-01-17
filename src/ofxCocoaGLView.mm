@@ -157,17 +157,46 @@ static NSOpenGLContext *_context = nil;
 			[self mouseMoved:e];
 			return e;
 		}];
+		
+		// setup tracking area
+		NSTrackingArea *trackingArea = [[[NSTrackingArea alloc] initWithRect:[self visibleRect]
+																	 options:NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingInVisibleRect |NSTrackingActiveAlways
+																	   owner:self
+																	userInfo:nil] autorelease];
+		[self addTrackingArea:trackingArea];
+		
+		// setup terminate notification
+		NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+		[nc addObserver:self
+			   selector:@selector(appWillTerminate:)
+				   name:NSApplicationWillTerminateNotification
+				 object:NSApp];
 	}
 	
 	return self;
+}
+
+- (void)appWillTerminate:(id)sender
+{
+	[self exit];
+	
+	if (displayLink)
+	{
+		CVDisplayLinkStop(displayLink);
+		CVDisplayLinkRelease(displayLink);
+	}
 }
 
 - (void)dealloc
 {	
 	[self exit];
 	
-	CVDisplayLinkRelease(displayLink);
-	
+	if (displayLink)
+	{
+		CVDisplayLinkStop(displayLink);
+		CVDisplayLinkRelease(displayLink);
+	}
+
 	[super dealloc];
 }
 
@@ -481,8 +510,17 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self keyPressed:c[0]];
-	ofNotifyKeyPressed(c[0]);
+	
+	int key = c[0];
+	
+	if (key == OF_KEY_ESC)
+	{
+		[[NSApplication sharedApplication] terminate:self];
+		[NSApp terminate:self];
+	}
+	
+	[self keyPressed:key];
+	ofNotifyKeyPressed(key);
 }
 
 - (void)keyUp:(NSEvent *)theEvent
@@ -493,6 +531,17 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	[self keyReleased:c[0]];
 	ofNotifyKeyReleased(c[0]);
+}
+
+- (void)mouseEntered:(NSEvent *)event
+{
+	[self mouseEntered];
+}
+
+
+- (void)mouseExited:(NSEvent *)event
+{
+	[self mouseExited];
 }
 
 #pragma mark oF like API
@@ -509,6 +558,9 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (void)mousePressed:(NSPoint)p button:(int)button {}
 - (void)mouseReleased:(NSPoint)p button:(int)button {}
 - (void)windowResized:(NSSize)size {}
+
+- (void)mouseEntered {}
+- (void)mouseExited {}
 
 //
 
