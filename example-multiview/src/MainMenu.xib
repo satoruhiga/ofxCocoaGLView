@@ -241,7 +241,7 @@
 				<int key="NSWindowStyleMask">7</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{335, 390}, {970, 480}}</string>
-				<int key="NSWTFlags">1954021376</int>
+				<int key="NSWTFlags">1685585920</int>
 				<string key="NSWindowTitle"/>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
@@ -653,19 +653,27 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">ofxNSGLView</string>
+					<string key="className">ofxCocoaGLView</string>
 					<string key="superclassName">NSOpenGLView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/ofxNSGLView.h</string>
+						<string key="minorKey">./Classes/ofxCocoaGLView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">testView1</string>
-					<string key="superclassName">ofxNSGLView</string>
+					<string key="superclassName">ofxCocoaGLView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/testView1.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">testView2</string>
+					<string key="superclassName">ofxCocoaGLView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/testView2.h</string>
 					</object>
 				</object>
 			</array>

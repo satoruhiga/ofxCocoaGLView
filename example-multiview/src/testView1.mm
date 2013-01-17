@@ -26,37 +26,37 @@
 	
 }
 
-- (void)onKeyPressed:(int)key
+- (void)keyPressed:(int)key
 {
 	
 }
 
-- (void)onKeyReleased:(int)key
+- (void)keyReleased:(int)key
 {
 	
 }
 
-- (void)onMouseMoved:(NSPoint)p
+- (void)mouseMoved_:(NSPoint)p
 {
 	
 }
 
-- (void)onMouseDragged:(NSPoint)p button:(int)button
+- (void)mouseDragged:(NSPoint)p button:(int)button
 {
 	
 }
 
-- (void)onMousePressed:(NSPoint)p button:(int)button
+- (void)mousePressed:(NSPoint)p button:(int)button
 {
 	
 }
 
-- (void)onMouseReleased:(NSPoint)p button:(int)button
+- (void)mouseReleased:(NSPoint)p button:(int)button
 {
 	
 }
 
-- (void)onWindowResized:(NSSize)size
+- (void)windowResized:(NSSize)size
 {
 	
 }

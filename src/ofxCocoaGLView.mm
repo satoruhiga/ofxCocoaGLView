@@ -353,7 +353,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	[[self openGLContext] update];
 	
 	NSRect r = self.bounds;
-	[self onWindowResized:r.size];
+	[self windowResized:r.size];
 	ofNotifyWindowResized(r.size.width, r.size.height);
 	
 	END_OPENGL();
@@ -381,7 +381,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMousePressed:p button:[theEvent buttonNumber]];
+	[self mousePressed:p button:[theEvent buttonNumber]];
 	ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
 }
 
@@ -391,7 +391,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMouseDragged:p button:[theEvent buttonNumber]];
+	[self mouseDragged:p button:[theEvent buttonNumber]];
 	ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
 }
 
@@ -401,7 +401,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMouseReleased:p button:[theEvent buttonNumber]];
+	[self mouseReleased:p button:[theEvent buttonNumber]];
 	ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
 }
 
@@ -411,7 +411,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMouseMoved:p];
+	[self mouseMoved_:p];
 	ofNotifyMouseMoved(p.x, p.y);
 }
 
@@ -421,7 +421,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMousePressed:p button:[theEvent buttonNumber]];
+	[self mousePressed:p button:[theEvent buttonNumber]];
 	ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
 }
 
@@ -431,7 +431,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMouseDragged:p button:[theEvent buttonNumber]];
+	[self mouseDragged:p button:[theEvent buttonNumber]];
 	ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
 }
 
@@ -441,7 +441,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMouseReleased:p button:[theEvent buttonNumber]];
+	[self mouseReleased:p button:[theEvent buttonNumber]];
 	ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
 }
 
@@ -451,7 +451,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMousePressed:p button:[theEvent buttonNumber]];
+	[self mousePressed:p button:[theEvent buttonNumber]];
 	ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
 }
 
@@ -461,7 +461,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMouseDragged:p button:[theEvent buttonNumber]];
+	[self mouseDragged:p button:[theEvent buttonNumber]];
 	ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
 }
 
@@ -471,7 +471,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onMouseReleased:p button:[theEvent buttonNumber]];
+	[self mouseReleased:p button:[theEvent buttonNumber]];
 	ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
 }
 
@@ -481,7 +481,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onKeyPressed:c[0]];
+	[self keyPressed:c[0]];
 	ofNotifyKeyPressed(c[0]);
 }
 
@@ -491,7 +491,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	
 	makeCurrentView(self);
 	
-	[self onKeyReleased:c[0]];
+	[self keyReleased:c[0]];
 	ofNotifyKeyReleased(c[0]);
 }
 
@@ -502,13 +502,13 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (void)draw {}
 - (void)exit {}
 
-- (void)onKeyPressed:(int)key {}
-- (void)onKeyReleased:(int)key {}
-- (void)onMouseMoved:(NSPoint)p {}
-- (void)onMouseDragged:(NSPoint)p button:(int)button {}
-- (void)onMousePressed:(NSPoint)p button:(int)button {}
-- (void)onMouseReleased:(NSPoint)p button:(int)button {}
-- (void)onWindowResized:(NSSize)size {}
+- (void)keyPressed:(int)key {}
+- (void)keyReleased:(int)key {}
+- (void)mouseMoved_:(NSPoint)p {}
+- (void)mouseDragged:(NSPoint)p button:(int)button {}
+- (void)mousePressed:(NSPoint)p button:(int)button {}
+- (void)mouseReleased:(NSPoint)p button:(int)button {}
+- (void)windowResized:(NSSize)size {}
 
 //
 

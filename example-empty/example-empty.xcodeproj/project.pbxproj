@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		608B6AAD16A78AAD00144EF4 /* openFrameworks-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 608B6AAC16A78AAD00144EF4 /* openFrameworks-Info.plist */; };
 		608B6AB116A78AB800144EF4 /* ofxCocoaGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 608B6AB016A78AB800144EF4 /* ofxCocoaGLView.mm */; };
 		6091337D1652C9C900B523AD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6091337A1652C9C900B523AD /* AppDelegate.m */; };
 		6091337E1652C9C900B523AD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6091337B1652C9C900B523AD /* main.m */; };
@@ -301,7 +300,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				609133841652CA6600B523AD /* MainMenu.xib in Resources */,
-				608B6AAD16A78AAD00144EF4 /* openFrameworks-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
