@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxNSGLView.h"
+#include "ofxCocoaGLView.h"
 
-@interface testView2 : ofxNSGLView {
+@interface testView2 : ofxCocoaGLView {
 }
 
 - (void)setup;

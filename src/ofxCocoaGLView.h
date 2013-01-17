@@ -3,7 +3,7 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>
 
-@interface ofxNSGLView : NSOpenGLView {
+@interface ofxCocoaGLView : NSOpenGLView {
 	CVDisplayLinkRef displayLink;
 	NSTimer *updateTimer;
 	

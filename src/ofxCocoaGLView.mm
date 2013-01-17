@@ -1,6 +1,6 @@
 #include "ofMain.h"
 
-#include "ofxNSGLView.h"
+#include "ofxCocoaGLView.h"
 #include "ofAppBaseWindow.h"
 
 #define BEGIN_OPENGL() \
@@ -11,17 +11,17 @@ CGLLockContext(cglContext);
 #define END_OPENGL() \
 CGLUnlockContext(cglContext);
 
-#define OFXNSGLVIEW_IGNORED ofLogWarning("ofxNSGLView") << "operation ignored";
+#define OFXCOCOAGLVIEW_IGNORED ofLogWarning("ofxNSGLView") << "operation ignored";
 
 static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,  const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext);
 
-class ofxNSGLViewWindowProxy : public ofAppBaseWindow
+class ofxCocoaGLViewWindowProxy : public ofAppBaseWindow
 {
 public:
 	
-	ofxNSGLView *view;
+	ofxCocoaGLView *view;
 	
-	ofxNSGLViewWindowProxy(ofxNSGLView *view_)
+	ofxCocoaGLViewWindowProxy(ofxCocoaGLView *view_)
 	{
 		view = view_;
 	}
@@ -84,43 +84,43 @@ public:
 
 	void setWindowPosition(int x, int y)
 	{
-		OFXNSGLVIEW_IGNORED;
+		OFXCOCOAGLVIEW_IGNORED;
 	}
 	
 	void setWindowShape(int w, int h)
 	{
-		OFXNSGLVIEW_IGNORED;
+		OFXCOCOAGLVIEW_IGNORED;
 	}
 	
 	void setWindowTitle(string title)
 	{
-		OFXNSGLVIEW_IGNORED;
+		OFXCOCOAGLVIEW_IGNORED;
 	}
 
 };
 
-static ofPtr<ofxNSGLViewWindowProxy> window_proxy;
+static ofPtr<ofxCocoaGLViewWindowProxy> window_proxy;
 
-static void setupWindowProxy(ofxNSGLView *view)
+static void setupWindowProxy(ofxCocoaGLView *view)
 {
 	if (window_proxy) return;
-	window_proxy = ofPtr<ofxNSGLViewWindowProxy>(new ofxNSGLViewWindowProxy(view));
+	window_proxy = ofPtr<ofxCocoaGLViewWindowProxy>(new ofxCocoaGLViewWindowProxy(view));
 	ofSetupOpenGL(window_proxy, view.bounds.size.width, view.bounds.size.height, OF_WINDOW);
 }
 
-static void makeCurrentView(ofxNSGLView *view)
+static void makeCurrentView(ofxCocoaGLView *view)
 {
 	window_proxy->view = view;
 }
 
 static NSOpenGLContext *_context = nil;
 
-@interface ofxNSGLView ()
+@interface ofxCocoaGLView ()
 - (void) initGL;
 - (void) drawView;
 @end
 
-@implementation ofxNSGLView
+@implementation ofxCocoaGLView
 
 @synthesize mouseX, mouseY;
 
@@ -143,7 +143,7 @@ static NSOpenGLContext *_context = nil;
 		[self.pixelFormat getValues:&double_buffer forAttribute:NSOpenGLPFADoubleBuffer forVirtualScreen:0];
 		
 		if (double_buffer == 0)
-			ofLogWarning("ofxNSGLView") << "double buffer is disabled";
+			ofLogWarning("ofxCocoaGLView") << "double buffer is disabled";
 		
 		displayLink = NULL;
 		
@@ -295,7 +295,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 									  CVOptionFlags* flagsOut,
 									  void* displayLinkContext)
 {
-    CVReturn result = [(ofxNSGLView*)displayLinkContext getFrameForTime:outputTime];
+    CVReturn result = [(ofxCocoaGLView*)displayLinkContext getFrameForTime:outputTime];
     return result;
 }
 

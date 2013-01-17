@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		609133771652C97700B523AD /* ofxNSGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 609133761652C97700B523AD /* ofxNSGLView.mm */; };
+		608B6AAD16A78AAD00144EF4 /* openFrameworks-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 608B6AAC16A78AAD00144EF4 /* openFrameworks-Info.plist */; };
+		608B6AB116A78AB800144EF4 /* ofxCocoaGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 608B6AB016A78AB800144EF4 /* ofxCocoaGLView.mm */; };
 		6091337D1652C9C900B523AD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6091337A1652C9C900B523AD /* AppDelegate.m */; };
 		6091337E1652C9C900B523AD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6091337B1652C9C900B523AD /* main.m */; };
 		609133841652CA6600B523AD /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6091337C1652C9C900B523AD /* MainMenu.xib */; };
@@ -63,9 +64,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		609133751652C97700B523AD /* ofxNSGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxNSGLView.h; sourceTree = "<group>"; };
-		609133761652C97700B523AD /* ofxNSGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ofxNSGLView.mm; sourceTree = "<group>"; };
-		609133781652C9A400B523AD /* ofxNSGLView-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "ofxNSGLView-Info.plist"; sourceTree = "<group>"; };
+		608B6AAC16A78AAD00144EF4 /* openFrameworks-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "openFrameworks-Info.plist"; sourceTree = "<group>"; };
+		608B6AAF16A78AB800144EF4 /* ofxCocoaGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxCocoaGLView.h; sourceTree = "<group>"; };
+		608B6AB016A78AB800144EF4 /* ofxCocoaGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ofxCocoaGLView.mm; sourceTree = "<group>"; };
 		609133791652C9C900B523AD /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		6091337A1652C9C900B523AD /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		6091337B1652C9C900B523AD /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -122,28 +123,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		609133721652C97100B523AD /* ofxNSGLView */ = {
+		608B6AAE16A78AB800144EF4 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				609133741652C97700B523AD /* src */,
-			);
-			name = ofxNSGLView;
-			sourceTree = "<group>";
-		};
-		609133741652C97700B523AD /* src */ = {
-			isa = PBXGroup;
-			children = (
-				609133751652C97700B523AD /* ofxNSGLView.h */,
-				609133761652C97700B523AD /* ofxNSGLView.mm */,
+				608B6AAF16A78AB800144EF4 /* ofxCocoaGLView.h */,
+				608B6AB016A78AB800144EF4 /* ofxCocoaGLView.mm */,
 			);
 			name = src;
 			path = ../src;
 			sourceTree = "<group>";
 		};
+		609133721652C97100B523AD /* ofxCocoaGLView */ = {
+			isa = PBXGroup;
+			children = (
+				608B6AAE16A78AB800144EF4 /* src */,
+			);
+			name = ofxCocoaGLView;
+			sourceTree = "<group>";
+		};
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
-				609133721652C97100B523AD /* ofxNSGLView */,
+				609133721652C97100B523AD /* ofxCocoaGLView */,
 			);
 			name = addons;
 			sourceTree = "<group>";
@@ -198,7 +199,7 @@
 		E4B69B4A0A3A1720003C02F2 = {
 			isa = PBXGroup;
 			children = (
-				609133781652C9A400B523AD /* ofxNSGLView-Info.plist */,
+				608B6AAC16A78AAD00144EF4 /* openFrameworks-Info.plist */,
 				E4EB6923138AFD0F00A09F29 /* Project.xcconfig */,
 				E4B69E1C0A3A1BDC003C02F2 /* src */,
 				E4EEC9E9138DF44700A80321 /* openFrameworks */,
@@ -300,6 +301,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				609133841652CA6600B523AD /* MainMenu.xib in Resources */,
+				608B6AAD16A78AAD00144EF4 /* openFrameworks-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,10 +328,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				609133771652C97700B523AD /* ofxNSGLView.mm in Sources */,
 				6091337D1652C9C900B523AD /* AppDelegate.m in Sources */,
 				6091337E1652C9C900B523AD /* main.m in Sources */,
 				609133871652CB3E00B523AD /* testView.mm in Sources */,
+				608B6AB116A78AB800144EF4 /* ofxCocoaGLView.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,7 +418,7 @@
 				GCC_MODEL_TUNING = NONE;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
-				INFOPLIST_FILE = "ofxNSGLView-Info.plist";
+				INFOPLIST_FILE = "openFrameworks-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -502,7 +504,7 @@
 				GCC_MODEL_TUNING = NONE;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
-				INFOPLIST_FILE = "ofxNSGLView-Info.plist";
+				INFOPLIST_FILE = "openFrameworks-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
