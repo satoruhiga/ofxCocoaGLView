@@ -29,7 +29,7 @@
 	
 }
 
-- (void)mouseMoved_:(NSPoint)p
+- (void)mouseMoved:(NSPoint)p
 {
 	
 }

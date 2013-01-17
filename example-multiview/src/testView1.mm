@@ -14,6 +14,7 @@
 {
 	ofBackground(255, 0, 0);
 	
+	ofNoFill();
 	ofSetColor(255);
 	ofCircle(self.mouseX, self.mouseY, 100);
 	
@@ -36,7 +37,7 @@
 	
 }
 
-- (void)mouseMoved_:(NSPoint)p
+- (void)mouseMoved:(NSPoint)p
 {
 	
 }

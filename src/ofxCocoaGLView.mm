@@ -130,6 +130,8 @@ static NSOpenGLContext *_context = nil;
 	
 	if (self)
 	{
+		initialised = NO;
+		
 		if (_context == nil)
 		{
 			_context = [self openGLContext];
@@ -154,17 +156,14 @@ static NSOpenGLContext *_context = nil;
 		lastFrameTime = 0;
 		
 		[NSEvent addLocalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
-			[self mouseMoved:e];
+			[self _mouseMoved:e];
 			return e;
 		}];
-		
-		// setup tracking area
-		NSTrackingArea *trackingArea = [[[NSTrackingArea alloc] initWithRect:[self visibleRect]
-																	 options:NSTrackingMouseEnteredAndExited | NSTrackingMouseMoved | NSTrackingInVisibleRect |NSTrackingActiveAlways
-																	   owner:self
-																	userInfo:nil] autorelease];
-		[self addTrackingArea:trackingArea];
-		
+
+		[NSEvent addGlobalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
+			[self _mouseMoved:e];
+		}];
+
 		// setup terminate notification
 		NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 		[nc addObserver:self
@@ -267,12 +266,10 @@ static NSOpenGLContext *_context = nil;
 {
 	if (v)
 	{
-		[[self window] setAcceptsMouseMovedEvents:YES];
 		[[self window] makeFirstResponder:self];
 	}
 	else
 	{
-		[[self window] setAcceptsMouseMovedEvents:NO];
 		[[self window] makeFirstResponder:nil];
 	}
 }
@@ -304,6 +301,8 @@ static NSOpenGLContext *_context = nil;
 	[self setup];
 	ofNotifySetup();
 	
+	initialised = YES;
+	
 	END_OPENGL();
 }
 
@@ -330,6 +329,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void)drawView
 {
+	if (!initialised) return;
+	
 	BEGIN_OPENGL();
 	
 	makeCurrentView(self);
@@ -392,9 +393,9 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 #pragma mark events
 
-- (NSPoint)pointFromEvent:(NSEvent*)theEvent
+- (NSPoint)getCurrentMousePos
 {
-	NSPoint p = [theEvent locationInWindow];
+	NSPoint p = [self.window convertScreenToBase:[NSEvent mouseLocation]];
 	p = [self convertPoint:p fromView:nil];
 	p.y = self.bounds.size.height - p.y;
 	
@@ -404,114 +405,127 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	return p;
 }
 
+static int conv_button_number(int n)
+{
+	static int table[] = {0, 2, 1};
+	return table[n];
+}
+
 - (void)mouseDown:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mousePressed:p button:[theEvent buttonNumber]];
-	ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
+	int b = conv_button_number([theEvent buttonNumber]);
+	[self mousePressed:p button:b];
+	ofNotifyMousePressed(p.x, p.y, b);
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mouseDragged:p button:[theEvent buttonNumber]];
-	ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
+	int b = conv_button_number([theEvent buttonNumber]);
+	[self mouseDragged:p button:b];
+	ofNotifyMouseDragged(p.x, p.y, b);
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mouseReleased:p button:[theEvent buttonNumber]];
-	ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
+	int b = conv_button_number([theEvent buttonNumber]);
+	[self mouseReleased:p button:b];
+	ofNotifyMouseReleased(p.x, p.y, b);
 }
 
-- (void)mouseMoved:(NSEvent *)theEvent
+- (void)_mouseMoved:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mouseMoved_:p];
+	[self mouseMoved:p];
 	ofNotifyMouseMoved(p.x, p.y);
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mousePressed:p button:[theEvent buttonNumber]];
-	ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
+	int b = conv_button_number([theEvent buttonNumber]);
+	[self mousePressed:p button:b];
+	ofNotifyMousePressed(p.x, p.y, b);
 }
 
 - (void)rightMouseDragged:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mouseDragged:p button:[theEvent buttonNumber]];
-	ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
+	int b = conv_button_number([theEvent buttonNumber]);
+	[self mouseDragged:p button:b];
+	ofNotifyMouseDragged(p.x, p.y, b);
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mouseReleased:p button:[theEvent buttonNumber]];
-	ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
+	int b = conv_button_number([theEvent buttonNumber]);
+	[self mouseReleased:p button:b];
+	ofNotifyMouseReleased(p.x, p.y, b);
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mousePressed:p button:[theEvent buttonNumber]];
-	ofNotifyMousePressed(p.x, p.y, [theEvent buttonNumber]);
+	int b = conv_button_number([theEvent buttonNumber]);
+	[self mousePressed:p button:b];
+	ofNotifyMousePressed(p.x, p.y, b);
 }
 
 - (void)otherMouseDragged:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mouseDragged:p button:[theEvent buttonNumber]];
-	ofNotifyMouseDragged(p.x, p.y, [theEvent buttonNumber]);
+	int b = conv_button_number([theEvent buttonNumber]);
+	[self mouseDragged:p button:b];
+	ofNotifyMouseDragged(p.x, p.y, b);
 }
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-	NSPoint p = [self pointFromEvent:theEvent];
+	NSPoint p = [self getCurrentMousePos];
 	
 	makeCurrentView(self);
 	
-	[self mouseReleased:p button:[theEvent buttonNumber]];
-	ofNotifyMouseReleased(p.x, p.y, [theEvent buttonNumber]);
+	int b = conv_button_number([theEvent buttonNumber]);
+	[self mouseReleased:p button:b];
+	ofNotifyMouseReleased(p.x, p.y, b);
 }
 
 - (void)keyDown:(NSEvent *)theEvent
 {
 	const char *c = [[theEvent charactersIgnoringModifiers] UTF8String];
+	int key = c[0];
 	
 	makeCurrentView(self);
-	
-	
-	int key = c[0];
 	
 	if (key == OF_KEY_ESC)
 	{
@@ -526,18 +540,18 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (void)keyUp:(NSEvent *)theEvent
 {
 	const char *c = [[theEvent charactersIgnoringModifiers] UTF8String];
+	int key = c[0];
 	
 	makeCurrentView(self);
 	
-	[self keyReleased:c[0]];
-	ofNotifyKeyReleased(c[0]);
+	[self keyReleased:key];
+	ofNotifyKeyReleased(key);
 }
 
 - (void)mouseEntered:(NSEvent *)event
 {
 	[self mouseEntered];
 }
-
 
 - (void)mouseExited:(NSEvent *)event
 {
@@ -553,7 +567,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void)keyPressed:(int)key {}
 - (void)keyReleased:(int)key {}
-- (void)mouseMoved_:(NSPoint)p {}
+- (void)mouseMoved:(NSPoint)p {}
 - (void)mouseDragged:(NSPoint)p button:(int)button {}
 - (void)mousePressed:(NSPoint)p button:(int)button {}
 - (void)mouseReleased:(NSPoint)p button:(int)button {}
@@ -595,6 +609,14 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (BOOL)resignFirstResponder
 {
 	return YES;
+}
+
+//
+
+- (void)_surfaceNeedsUpdate:(NSNotification*)notification
+{
+	if (!initialised) return;
+	[self update];
 }
 
 @end

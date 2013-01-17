@@ -13,7 +13,7 @@
 
 - (void)keyPressed:(int)key;
 - (void)keyReleased:(int)key;
-- (void)mouseMoved_:(NSPoint)p;
+- (void)mouseMoved:(NSPoint)p;
 - (void)mouseDragged:(NSPoint)p button:(int)button;
 - (void)mousePressed:(NSPoint)p button:(int)button;
 - (void)mouseReleased:(NSPoint)p button:(int)button;
