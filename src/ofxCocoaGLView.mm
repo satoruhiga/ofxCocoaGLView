@@ -116,8 +116,9 @@ static void makeCurrentView(ofxCocoaGLView *view)
 static NSOpenGLContext *_context = nil;
 
 @interface ofxCocoaGLView ()
-- (void) initGL;
-- (void) drawView;
+- (void)initGL;
+- (void)drawView;
+- (void)dispose;
 @end
 
 @implementation ofxCocoaGLView
@@ -131,71 +132,116 @@ static NSOpenGLContext *_context = nil;
 	if (self)
 	{
 		initialised = NO;
+		bEnableSetupScreen = true;
+		nFrameCount = 0;
 		
+		translucent = NO;
+		useDisplayLink = NO;
+		
+		targetFrameRate = 60;
+		frameRate = 0;
+		
+		lastUpdateTime = 0;
+		lastFrameTime = 0;
+		
+		mouseX = mouseY = 0;
+		
+		global_monitor_handler = nil;
+		local_monitor_handler = nil;
+		
+		displayLink = NULL;
+		updateTimer = nil;
+
 		if (_context == nil)
 		{
 			_context = [self openGLContext];
 		}
 		else
 		{
-			self.openGLContext = [[NSOpenGLContext alloc] initWithFormat:self.pixelFormat shareContext:_context];
+			self.openGLContext = [[[NSOpenGLContext alloc] initWithFormat:self.pixelFormat shareContext:_context] autorelease];
 		}
 		
-		GLint double_buffer = 0;
-		[self.pixelFormat getValues:&double_buffer forAttribute:NSOpenGLPFADoubleBuffer forVirtualScreen:0];
-		
-		if (double_buffer == 0)
-			ofLogWarning("ofxCocoaGLView") << "double buffer is disabled";
-		
-		displayLink = NULL;
-		
-		bEnableSetupScreen = true;
-		nFrameCount = 0;
+		{
+			GLint double_buffer = 0;
+			[self.pixelFormat getValues:&double_buffer forAttribute:NSOpenGLPFADoubleBuffer forVirtualScreen:0];
+			
+			if (double_buffer == 0)
+				ofLogWarning("ofxCocoaGLView") << "double buffer is disabled";
+		}
+
+		{
+			local_monitor_handler = [NSEvent addLocalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
+				[self _mouseMoved:e];
+				return e;
+			}];
+
+			global_monitor_handler = [NSEvent addGlobalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
+				[self _mouseMoved:e];
+			}];
+			
+			// setup terminate notification
+			NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+			[nc addObserver:self
+				   selector:@selector(appWillTerminate:)
+					   name:NSApplicationWillTerminateNotification
+					 object:NSApp];
+			
+			tracking_rect_tag = [self addTrackingRect:[self bounds] owner:self userData:NULL assumeInside:NO];
+		}
 		
 		[self setFrameRate:60];
-		lastFrameTime = 0;
-		
-		[NSEvent addLocalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
-			[self _mouseMoved:e];
-			return e;
-		}];
-
-		[NSEvent addGlobalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
-			[self _mouseMoved:e];
-		}];
-
-		// setup terminate notification
-		NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-		[nc addObserver:self
-			   selector:@selector(appWillTerminate:)
-				   name:NSApplicationWillTerminateNotification
-				 object:NSApp];
 	}
 	
 	return self;
 }
 
-- (void)appWillTerminate:(id)sender
+- (void)dispose
 {
 	[self exit];
 	
+	if (updateTimer)
+	{
+		[updateTimer invalidate];
+		updateTimer = nil;
+	}
+
 	if (displayLink)
 	{
 		CVDisplayLinkStop(displayLink);
 		CVDisplayLinkRelease(displayLink);
+		displayLink = NULL;
+	}
+	
+	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+	[nc removeObserver:self name:NSApplicationWillTerminateNotification object:NSApp];
+	
+	if (local_monitor_handler)
+	{
+		[NSEvent removeMonitor:local_monitor_handler];
+		local_monitor_handler = nil;
+	}
+	
+	if (global_monitor_handler)
+	{
+		[NSEvent removeMonitor:global_monitor_handler];
+		global_monitor_handler = nil;
+	}
+	
+	if (tracking_rect_tag)
+	{
+		[self removeTrackingRect:tracking_rect_tag];
+		tracking_rect_tag = NULL;
 	}
 }
 
-- (void)dealloc
-{	
-	[self exit];
-	
-	if (displayLink)
-	{
-		CVDisplayLinkStop(displayLink);
-		CVDisplayLinkRelease(displayLink);
-	}
+- (void)appWillTerminate:(id)sender
+{
+	[self dispose];
+}
 
+- (void)dealloc
+{
+	[self dispose];
 	[super dealloc];
 }
 
@@ -615,7 +661,12 @@ static int conv_button_number(int n)
 
 - (void)_surfaceNeedsUpdate:(NSNotification*)notification
 {
-	if (!initialised) return;
+	if (!initialised)
+	{
+		[super update];
+		return;
+	}
+	
 	[self update];
 }
 

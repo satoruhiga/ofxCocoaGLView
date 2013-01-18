@@ -24,6 +24,11 @@
 	float lastFrameTime;
 	
 	float mouseX, mouseY;
+	
+	id global_monitor_handler;
+	id local_monitor_handler;
+	
+	NSTrackingRectTag tracking_rect_tag;
 }
 
 @property (assign, readonly) float mouseX;
@@ -41,6 +46,9 @@
 - (void)mousePressed:(NSPoint)p button:(int)button;
 - (void)mouseReleased:(NSPoint)p button:(int)button;
 - (void)windowResized:(NSSize)size;
+
+- (void)mouseEntered;
+- (void)mouseExited;
 
 //
 
