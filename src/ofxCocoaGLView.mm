@@ -297,7 +297,8 @@ static NSOpenGLContext *_context = nil;
 	else
 	{
 		float interval = 1. / targetFrameRate;
-		updateTimer = [NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
+		updateTimer = [NSTimer timerWithTimeInterval:interval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
+		[[NSRunLoop mainRunLoop] addTimer:updateTimer forMode:NSRunLoopCommonModes];
 	}
 }
 
