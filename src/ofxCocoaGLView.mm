@@ -110,7 +110,8 @@ static void setupWindowProxy(ofxCocoaGLView *view)
 
 static void makeCurrentView(ofxCocoaGLView *view)
 {
-	window_proxy->view = view;
+	if (window_proxy)
+		window_proxy->view = view;
 }
 
 static NSOpenGLContext *_context = nil;
@@ -124,6 +125,7 @@ static NSOpenGLContext *_context = nil;
 @implementation ofxCocoaGLView
 
 @synthesize mouseX, mouseY;
+@synthesize width, height;
 
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
@@ -186,7 +188,7 @@ static NSOpenGLContext *_context = nil;
 					   name:NSApplicationWillTerminateNotification
 					 object:NSApp];
 			
-			tracking_rect_tag = [self addTrackingRect:[self bounds] owner:self userData:NULL assumeInside:NO];
+			tracking_rect_tag = NULL;
 		}
 		
 		[self setFrameRate:60];
@@ -429,10 +431,22 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	[[self openGLContext] update];
 	
 	NSRect r = self.bounds;
+	
+	width = r.size.width;
+	height = r.size.height;
+	
 	[self windowResized:r.size];
-	ofNotifyWindowResized(r.size.width, r.size.height);
+	ofNotifyWindowResized(width, height);
 	
 	END_OPENGL();
+	
+	if (tracking_rect_tag)
+	{
+		[self removeTrackingRect:tracking_rect_tag];
+		tracking_rect_tag = NULL;
+	}
+
+	tracking_rect_tag = [self addTrackingRect:[self bounds] owner:self userData:NULL assumeInside:NO];
 	
 	[self drawView];
 }

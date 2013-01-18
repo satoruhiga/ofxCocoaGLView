@@ -23,16 +23,20 @@
 	float lastUpdateTime;
 	float lastFrameTime;
 	
-	float mouseX, mouseY;
-	
 	id global_monitor_handler;
 	id local_monitor_handler;
 	
 	NSTrackingRectTag tracking_rect_tag;
+	
+	float mouseX, mouseY;
+	float width, height;
 }
 
 @property (assign, readonly) float mouseX;
 @property (assign, readonly) float mouseY;
+@property (assign, readonly) float width;
+@property (assign, readonly) float height;
+
 
 - (void)setup;
 - (void)update;
