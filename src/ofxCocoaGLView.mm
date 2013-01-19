@@ -96,7 +96,6 @@ public:
 	{
 		OFXCOCOAGLVIEW_IGNORED;
 	}
-
 };
 
 static ofPtr<ofxCocoaGLViewWindowProxy> window_proxy;
@@ -120,6 +119,7 @@ static NSOpenGLContext *_context = nil;
 - (void)initGL;
 - (void)drawView;
 - (void)dispose;
+- (BOOL)isVisible;
 @end
 
 @implementation ofxCocoaGLView
@@ -173,12 +173,16 @@ static NSOpenGLContext *_context = nil;
 
 		{
 			local_monitor_handler = [NSEvent addLocalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
-				[self _mouseMoved:e];
+				
+				if ([self isVisible])
+					[self _mouseMoved:e];
 				return e;
 			}];
 
 			global_monitor_handler = [NSEvent addGlobalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
-				[self _mouseMoved:e];
+				
+				if ([self isVisible])
+					[self _mouseMoved:e];
 			}];
 			
 			// setup terminate notification
@@ -380,45 +384,48 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 {
 	if (!initialised) return;
 	
-	BEGIN_OPENGL();
-	
-	makeCurrentView(self);
-	
+	if ([self isVisible])
 	{
-		float t = ofGetElapsedTimef();
-		lastFrameTime = t - lastUpdateTime;
-		float d = 1. / lastFrameTime;
+		BEGIN_OPENGL();
 		
-		frameRate += (d - frameRate) * 0.1;
+		makeCurrentView(self);
 		
-		lastUpdateTime = t;
+		{
+			float t = ofGetElapsedTimef();
+			lastFrameTime = t - lastUpdateTime;
+			float d = 1. / lastFrameTime;
+			
+			frameRate += (d - frameRate) * 0.1;
+			
+			lastUpdateTime = t;
+		}
+		
+		[self update];
+		ofNotifyUpdate();
+		
+		NSRect r = self.bounds;
+		ofViewport(0, 0, r.size.width, r.size.height);
+		
+		float *bgPtr = ofBgColorPtr();
+		bool bClearAuto = ofbClearBg();
+		
+		if (bClearAuto || nFrameCount < 3)
+		{
+			float * bgPtr = ofBgColorPtr();
+			glClearColor(bgPtr[0], bgPtr[1], bgPtr[2], bgPtr[3]);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
+		
+		if (bEnableSetupScreen) ofSetupScreen();
+		
+		[self draw];
+		ofNotifyDraw();
+		
+		glFlush();
+		[[self openGLContext] flushBuffer];
+		
+		END_OPENGL();
 	}
-	
-	[self update];
-	ofNotifyUpdate();
-
-	NSRect r = self.bounds;
-	ofViewport(0, 0, r.size.width, r.size.height);
-
-	float *bgPtr = ofBgColorPtr();
-	bool bClearAuto = ofbClearBg();
-	
-	if (bClearAuto || nFrameCount < 3)
-	{
-		float * bgPtr = ofBgColorPtr();
-		glClearColor(bgPtr[0], bgPtr[1], bgPtr[2], bgPtr[3]);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
-	
-	if (bEnableSetupScreen) ofSetupScreen();
-	
-	[self draw];
-	ofNotifyDraw();
-	
-	glFlush();
-	[[self openGLContext] flushBuffer];
-	
-	END_OPENGL();
 	
 	nFrameCount++;
 }
@@ -683,6 +690,11 @@ static int conv_button_number(int n)
 	}
 	
 	[self update];
+}
+
+- (BOOL)isVisible
+{
+	return self.window && [self.window isVisible];
 }
 
 @end
