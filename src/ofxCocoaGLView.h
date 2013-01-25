@@ -6,28 +6,32 @@
 @interface ofxCocoaGLView : NSOpenGLView {
 	CVDisplayLinkRef displayLink;
 	NSTimer *updateTimer;
-	
+
+	NSWindow *fullscreenWindow;
+	NSWindow *startingWindow;
+	BOOL fullscreenOn;
+
 @public
-	
+
 	bool initialised;
-	
+
 	bool bEnableSetupScreen;
 	int nFrameCount;
-	
+
 	BOOL translucent;
 	BOOL useDisplayLink;
-	
+
 	float targetFrameRate;
 	float frameRate;
-	
+
 	float lastUpdateTime;
 	float lastFrameTime;
-	
+
 	id global_monitor_handler;
 	id local_monitor_handler;
-	
+
 	NSTrackingRectTag tracking_rect_tag;
-	
+
 	float mouseX, mouseY;
 	float width, height;
 }
