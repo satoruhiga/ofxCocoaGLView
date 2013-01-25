@@ -37,6 +37,9 @@
 @property (assign, readonly) float width;
 @property (assign, readonly) float height;
 
++ (NSOpenGLContext*)sharedContext;
++ (void)lockSharedContext;
++ (void)unlockSharedContext;
 
 - (void)setup;
 - (void)update;

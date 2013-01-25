@@ -127,6 +127,24 @@ static NSOpenGLContext *_context = nil;
 @synthesize mouseX, mouseY;
 @synthesize width, height;
 
++ (NSOpenGLContext*)sharedContext
+{
+	return _context;
+}
+
++ (void)lockSharedContext
+{
+	[_context makeCurrentContext];
+	CGLContextObj cglContext = (CGLContextObj)[_context CGLContextObj];
+	CGLLockContext(cglContext);
+}
+
++ (void)unlockSharedContext
+{
+	CGLContextObj cglContext = (CGLContextObj)[_context CGLContextObj];
+	CGLUnlockContext(cglContext);
+}
+
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
 	self = [super initWithCoder:aDecoder];
