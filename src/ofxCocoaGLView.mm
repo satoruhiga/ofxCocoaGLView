@@ -221,6 +221,9 @@ static NSOpenGLContext *_context = nil;
 
 - (void)dispose
 {
+	if (!fullscreenOn)
+		[self.window saveFrameUsingName:[self className]];
+	
 	[self exit];
 
 	if (updateTimer)
@@ -433,6 +436,8 @@ static NSOpenGLContext *_context = nil;
 	initialised = YES;
 
 	END_OPENGL();
+	
+	[self.window setFrameUsingName:[self className] force:YES];
 }
 
 - (CVReturn)getFrameForTime:(const CVTimeStamp*)outputTime
