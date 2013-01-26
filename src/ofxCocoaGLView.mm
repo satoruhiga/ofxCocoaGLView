@@ -280,6 +280,56 @@ static NSOpenGLContext *_context = nil;
 	[self enableDisplayLink:useDisplayLink];
 }
 
+- (void)setFullscreenTo:(NSScreen*)screen
+{
+	if (fullscreenOn) return;
+	
+	NSRect frame = [screen frame];
+	
+	[NSMenu setMenuBarVisible:NO];
+	
+	// Instantiate new borderless window
+	fullscreenWindow = [[NSWindow alloc]
+						initWithContentRect:frame
+						styleMask:NSBorderlessWindowMask
+						backing:NSBackingStoreBuffered
+						defer: NO];
+	
+	[startingWindow setAcceptsMouseMovedEvents:NO];
+	
+	if(fullscreenWindow != nil)
+	{
+		// Set the options for our new fullscreen window
+		[fullscreenWindow setReleasedWhenClosed:YES];
+		[fullscreenWindow setAcceptsMouseMovedEvents:YES];
+		[fullscreenWindow setContentView: self];
+		[fullscreenWindow makeKeyAndOrderFront:self];
+		
+		[fullscreenWindow setLevel:NSNormalWindowLevel];
+		[fullscreenWindow makeFirstResponder:self];
+		fullscreenOn = true;
+	}
+	else
+	{
+		NSLog(@"Error: could not create fullscreen window!");
+	}
+}
+
+- (void)exitFullscreen
+{
+	if (!fullscreenOn) return;
+	
+	[NSMenu setMenuBarVisible:YES];
+	
+	[fullscreenWindow close];
+	fullscreenWindow = nil;
+	[startingWindow setAcceptsMouseMovedEvents:YES];
+	[startingWindow setContentView: self];
+	[startingWindow makeKeyAndOrderFront: self];
+	[startingWindow makeFirstResponder: self];
+	fullscreenOn = false;
+}
+
 - (void)setFullscreen:(BOOL)v
 {
 	if (v)
@@ -290,56 +340,20 @@ static NSOpenGLContext *_context = nil;
 		center.x = rect.origin.x + rect.size.width / 2;
 		center.y = rect.origin.y + rect.size.height / 2;
 
-		NSRect frame;
-
 		NSEnumerator *screenEnum = [[NSScreen screens] objectEnumerator];
 		NSScreen *screen;
 		while (screen = [screenEnum nextObject])
 		{
 			if (NSPointInRect(center, [screen frame]))
 			{
-				frame = [screen frame];
+				[self setFullscreenTo:screen];
 				break;
 			}
-		}
-
-		// Instantiate new borderless window
-		fullscreenWindow = [[NSWindow alloc]
-							initWithContentRect:frame
-							styleMask:NSBorderlessWindowMask
-							backing:NSBackingStoreBuffered
-							defer: NO];
-
-		[startingWindow setAcceptsMouseMovedEvents:NO];
-
-		if(fullscreenWindow != nil)
-		{
-			// Set the options for our new fullscreen window
-			[fullscreenWindow setReleasedWhenClosed:YES];
-			[fullscreenWindow setAcceptsMouseMovedEvents:YES];
-			[fullscreenWindow setContentView: self];
-			[fullscreenWindow makeKeyAndOrderFront:self];
-
-			// By setting the window level to just beneath the screensaver,
-			// only this window will be visible (no menu bar or dock)
-			[fullscreenWindow setLevel: NSScreenSaverWindowLevel-1];
-			[fullscreenWindow makeFirstResponder:self];
-			fullscreenOn = true;
-		}
-		else
-		{
-			NSLog(@"Error: could not create fullscreen window!");
 		}
 	}
 	else
 	{
-		[fullscreenWindow close];
-		fullscreenWindow = nil;
-		[startingWindow setAcceptsMouseMovedEvents:YES];
-		[startingWindow setContentView: self];
-		[startingWindow makeKeyAndOrderFront: self];
-		[startingWindow makeFirstResponder: self];
-		fullscreenOn = false;
+		[self exitFullscreen];
 	}
 }
 

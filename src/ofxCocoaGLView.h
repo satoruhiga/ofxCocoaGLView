@@ -65,6 +65,8 @@
 
 - (void)setFrameRate:(float)framerate;
 
+- (void)setFullscreenTo:(NSScreen*)screen;
+- (void)exitFullscreen;
 - (void)setFullscreen:(BOOL)v;
 - (void)toggleFullscreen;
 
