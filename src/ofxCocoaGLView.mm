@@ -221,7 +221,7 @@ static NSOpenGLContext *_context = nil;
 
 - (void)dispose
 {
-	if (!fullscreenOn)
+	if (![self isInFullScreenMode])
 		[self.window saveFrameUsingName:[self className]];
 	
 	[self exit];
@@ -282,52 +282,22 @@ static NSOpenGLContext *_context = nil;
 
 - (void)setFullscreenTo:(NSScreen*)screen
 {
-	if (fullscreenOn) return;
+	if ([self isInFullScreenMode]) return;
 	
-	NSRect frame = [screen frame];
-	
-	[NSMenu setMenuBarVisible:NO];
-	
-	// Instantiate new borderless window
-	fullscreenWindow = [[NSWindow alloc]
-						initWithContentRect:frame
-						styleMask:NSBorderlessWindowMask
-						backing:NSBackingStoreBuffered
-						defer: NO];
-	
-	[startingWindow setAcceptsMouseMovedEvents:NO];
-	
-	if(fullscreenWindow != nil)
-	{
-		// Set the options for our new fullscreen window
-		[fullscreenWindow setReleasedWhenClosed:YES];
-		[fullscreenWindow setAcceptsMouseMovedEvents:YES];
-		[fullscreenWindow setContentView: self];
-		[fullscreenWindow makeKeyAndOrderFront:self];
-		
-		[fullscreenWindow setLevel:NSNormalWindowLevel];
-		[fullscreenWindow makeFirstResponder:self];
-		fullscreenOn = true;
-	}
-	else
-	{
-		NSLog(@"Error: could not create fullscreen window!");
-	}
+	NSMutableDictionary *opts = [NSMutableDictionary dictionary];
+	[opts setObject:[NSNumber numberWithBool:YES] forKey:NSFullScreenModeSetting];
+
+	// BUG: black screen
+	// [opts setObject:[NSNumber numberWithInteger:NSNormalWindowLevel] forKey:NSFullScreenModeWindowLevel];
+
+	[self enterFullScreenMode:screen withOptions:opts];
 }
 
 - (void)exitFullscreen
 {
-	if (!fullscreenOn) return;
+	if (![self isInFullScreenMode]) return;
 	
-	[NSMenu setMenuBarVisible:YES];
-	
-	[fullscreenWindow close];
-	fullscreenWindow = nil;
-	[startingWindow setAcceptsMouseMovedEvents:YES];
-	[startingWindow setContentView: self];
-	[startingWindow makeKeyAndOrderFront: self];
-	[startingWindow makeFirstResponder: self];
-	fullscreenOn = false;
+	[self exitFullScreenModeWithOptions:nil];
 }
 
 - (void)setFullscreen:(BOOL)v
@@ -359,7 +329,7 @@ static NSOpenGLContext *_context = nil;
 
 - (void)toggleFullscreen
 {
-	[self setFullscreen:!fullscreenOn];
+	[self setFullscreen:![self isInFullScreenMode]];
 }
 
 - (void)enableDisplayLink:(BOOL)v
@@ -440,8 +410,6 @@ static NSOpenGLContext *_context = nil;
 		exit(1);
 	}
 
-	startingWindow = self.window;
-
 	setupWindowProxy(self);
 
 	[self setup];
@@ -477,8 +445,6 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void)drawView
 {
-	if (!initialised) return;
-
 	if ([self isVisible])
 	{
 		BEGIN_OPENGL();

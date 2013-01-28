@@ -7,10 +7,6 @@
 	CVDisplayLinkRef displayLink;
 	NSTimer *updateTimer;
 
-	NSWindow *fullscreenWindow;
-	NSWindow *startingWindow;
-	BOOL fullscreenOn;
-
 @public
 
 	bool initialised;
