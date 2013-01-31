@@ -285,10 +285,12 @@ static NSOpenGLContext *_context = nil;
 	if ([self isInFullScreenMode]) return;
 	
 	NSMutableDictionary *opts = [NSMutableDictionary dictionary];
-	[opts setObject:[NSNumber numberWithBool:YES] forKey:NSFullScreenModeSetting];
-
-	// BUG: black screen
-	// [opts setObject:[NSNumber numberWithInteger:NSNormalWindowLevel] forKey:NSFullScreenModeWindowLevel];
+	
+	// auto hide menubar
+	[opts setObject:[NSNumber numberWithInt:NSApplicationPresentationHideDock | NSApplicationPresentationAutoHideMenuBar] forKey:NSFullScreenModeApplicationPresentationOptions];
+	
+	// for all screen
+	[opts setObject:[NSNumber numberWithBool:NO] forKey:NSFullScreenModeAllScreens];
 
 	[self enterFullScreenMode:screen withOptions:opts];
 }
@@ -298,6 +300,7 @@ static NSOpenGLContext *_context = nil;
 	if (![self isInFullScreenMode]) return;
 	
 	[self exitFullScreenModeWithOptions:nil];
+	[self.window makeFirstResponder:self];
 }
 
 - (void)setFullscreen:(BOOL)v
