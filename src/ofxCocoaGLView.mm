@@ -3,15 +3,7 @@
 #include "ofxCocoaGLView.h"
 #include "ofAppBaseWindow.h"
 
-#define BEGIN_OPENGL() \
-[[self openGLContext] makeCurrentContext]; \
-CGLContextObj cglContext = (CGLContextObj)[[self openGLContext] CGLContextObj]; \
-CGLLockContext(cglContext);
-
-#define END_OPENGL() \
-CGLUnlockContext(cglContext);
-
-#define OFXCOCOAGLVIEW_IGNORED ofLogWarning("ofxNSGLView") << "operation ignored";
+#define OFXCOCOAGLVIEW_IGNORED ofLogWarning("ofxCocoaGLView") << "operation ignored";
 
 static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,  const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext);
 
@@ -191,28 +183,35 @@ static NSOpenGLContext *_context = nil;
 
 		{
 			local_monitor_handler = [NSEvent addLocalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
-
 				if ([self isVisible])
 					[self _mouseMoved:e];
 				return e;
 			}];
 
 			global_monitor_handler = [NSEvent addGlobalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
-
 				if ([self isVisible])
 					[self _mouseMoved:e];
 			}];
 
-			// setup terminate notification
 			NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+			
+			// setup terminate notification
 			[nc addObserver:self
-				   selector:@selector(appWillTerminate:)
+				   selector:@selector(applicationWillTerminate:)
 					   name:NSApplicationWillTerminateNotification
-					 object:NSApp];
-
+					 object:nil];
+			
+			[nc addObserver:self
+				   selector:@selector(applicationDidFinishLaunching:)
+					   name:NSApplicationDidFinishLaunchingNotification
+					 object:nil];
+			
 			tracking_rect_tag = NULL;
+			
+			// TODO: NSWindowDidChangeScreenNotification
 		}
-
+		
+		[self.window setFrameUsingName:[self className] force:YES];
 		[self setFrameRate:60];
 	}
 
@@ -240,7 +239,7 @@ static NSOpenGLContext *_context = nil;
 	}
 
 	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-	[nc removeObserver:self name:NSApplicationWillTerminateNotification object:NSApp];
+	[nc removeObserver:self];
 
 	if (local_monitor_handler)
 	{
@@ -261,9 +260,22 @@ static NSOpenGLContext *_context = nil;
 	}
 }
 
-- (void)appWillTerminate:(id)sender
+- (void)applicationWillTerminate:(id)sender
 {
 	[self dispose];
+}
+
+- (void)applicationDidFinishLaunching:(id)sender
+{
+	[ofxCocoaGLView lockSharedContext];
+	
+	[self setup];
+	ofNotifySetup();
+
+	[ofxCocoaGLView unlockSharedContext];
+	
+	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+	[nc removeObserver:self name:NSApplicationDidFinishLaunchingNotification object:nil];
 }
 
 - (void)dealloc
@@ -272,9 +284,9 @@ static NSOpenGLContext *_context = nil;
 	[super dealloc];
 }
 
-- (void)setFrameRate:(float)framerate_
+- (void)setFrameRate:(float)v
 {
-	targetFrameRate = framerate_;
+	targetFrameRate = v;
 	frameRate = targetFrameRate;
 
 	[self enableDisplayLink:useDisplayLink];
@@ -401,7 +413,7 @@ static NSOpenGLContext *_context = nil;
 	mouseX = m.x;
 	mouseY = self.frame.size.height - m.y;
 
-	BEGIN_OPENGL();
+	[ofxCocoaGLView lockSharedContext];
 
 	GLint swapInt = 1;
 	[[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
@@ -415,14 +427,9 @@ static NSOpenGLContext *_context = nil;
 
 	setupWindowProxy(self);
 
-	[self setup];
-	ofNotifySetup();
-
-	initialised = YES;
-
-	END_OPENGL();
+	[ofxCocoaGLView unlockSharedContext];
 	
-	[self.window setFrameUsingName:[self className] force:YES];
+	initialised = YES;
 }
 
 - (CVReturn)getFrameForTime:(const CVTimeStamp*)outputTime
@@ -450,7 +457,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 {
 	if ([self isVisible])
 	{
-		BEGIN_OPENGL();
+		[ofxCocoaGLView lockSharedContext];
 
 		makeCurrentView(self);
 
@@ -488,7 +495,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 		glFlush();
 		[[self openGLContext] flushBuffer];
 
-		END_OPENGL();
+		[ofxCocoaGLView unlockSharedContext];
 	}
 
 	nFrameCount++;
@@ -496,7 +503,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void)reshape
 {
-	BEGIN_OPENGL();
+	[ofxCocoaGLView lockSharedContext];
 
 	makeCurrentView(self);
 
@@ -510,7 +517,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 	[self windowResized:r.size];
 	ofNotifyWindowResized(width, height);
 
-	END_OPENGL();
+	[ofxCocoaGLView unlockSharedContext];
 
 	if (tracking_rect_tag)
 	{
