@@ -11,8 +11,8 @@
 
 	bool initialised;
 
-	bool bEnableSetupScreen;
-	int nFrameCount;
+	bool enableSetupScreen;
+	int frameCount;
 
 	BOOL translucent;
 	BOOL useDisplayLink;
@@ -23,10 +23,10 @@
 	float lastUpdateTime;
 	float lastFrameTime;
 
-	id global_monitor_handler;
-	id local_monitor_handler;
+	id globalMonitorHandler;
+	id localMonitorHandler;
 
-	NSTrackingRectTag tracking_rect_tag;
+	NSTrackingRectTag trackingRectTag;
 
 	float mouseX, mouseY;
 	float width, height;

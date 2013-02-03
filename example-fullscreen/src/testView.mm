@@ -13,6 +13,7 @@
 
 - (void)draw
 {
+	ofDrawBitmapString("if press any key to toggle fullscreen", 10, 20);
 }
 
 - (void)exit

@@ -3,6 +3,14 @@
 #include "ofxCocoaGLView.h"
 #include "ofAppBaseWindow.h"
 
+#define BEGIN_OPENGL() \
+[[self openGLContext] makeCurrentContext]; \
+CGLContextObj cglContext = (CGLContextObj)[[self openGLContext] CGLContextObj]; \
+CGLLockContext(cglContext);
+
+#define END_OPENGL() \
+CGLUnlockContext(cglContext);
+
 #define OFXCOCOAGLVIEW_IGNORED ofLogWarning("ofxCocoaGLView") << "operation ignored";
 
 static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,  const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext);
@@ -36,7 +44,7 @@ public:
 
 	int getFrameNum()
 	{
-		return view->nFrameCount;
+		return view->frameCount;
 	}
 
 	float getFrameRate()
@@ -144,8 +152,8 @@ static NSOpenGLContext *_context = nil;
 	if (self)
 	{
 		initialised = NO;
-		bEnableSetupScreen = true;
-		nFrameCount = 0;
+		enableSetupScreen = true;
+		frameCount = 0;
 
 		translucent = NO;
 		useDisplayLink = NO;
@@ -158,8 +166,8 @@ static NSOpenGLContext *_context = nil;
 
 		mouseX = mouseY = 0;
 
-		global_monitor_handler = nil;
-		local_monitor_handler = nil;
+		globalMonitorHandler = nil;
+		localMonitorHandler = nil;
 
 		displayLink = NULL;
 		updateTimer = nil;
@@ -182,13 +190,13 @@ static NSOpenGLContext *_context = nil;
 		}
 
 		{
-			local_monitor_handler = [NSEvent addLocalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
+			localMonitorHandler = [NSEvent addLocalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
 				if ([self isVisible])
 					[self _mouseMoved:e];
 				return e;
 			}];
 
-			global_monitor_handler = [NSEvent addGlobalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
+			globalMonitorHandler = [NSEvent addGlobalMonitorForEventsMatchingMask:NSMouseMovedMask handler:^(NSEvent *e) {
 				if ([self isVisible])
 					[self _mouseMoved:e];
 			}];
@@ -206,7 +214,7 @@ static NSOpenGLContext *_context = nil;
 					   name:NSApplicationDidFinishLaunchingNotification
 					 object:nil];
 			
-			tracking_rect_tag = NULL;
+			trackingRectTag = NULL;
 			
 			// TODO: NSWindowDidChangeScreenNotification
 		}
@@ -241,22 +249,22 @@ static NSOpenGLContext *_context = nil;
 	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 	[nc removeObserver:self];
 
-	if (local_monitor_handler)
+	if (localMonitorHandler)
 	{
-		[NSEvent removeMonitor:local_monitor_handler];
-		local_monitor_handler = nil;
+		[NSEvent removeMonitor:localMonitorHandler];
+		localMonitorHandler = nil;
 	}
 
-	if (global_monitor_handler)
+	if (globalMonitorHandler)
 	{
-		[NSEvent removeMonitor:global_monitor_handler];
-		global_monitor_handler = nil;
+		[NSEvent removeMonitor:globalMonitorHandler];
+		globalMonitorHandler = nil;
 	}
 
-	if (tracking_rect_tag)
+	if (trackingRectTag)
 	{
-		[self removeTrackingRect:tracking_rect_tag];
-		tracking_rect_tag = NULL;
+		[self removeTrackingRect:trackingRectTag];
+		trackingRectTag = NULL;
 	}
 }
 
@@ -267,12 +275,12 @@ static NSOpenGLContext *_context = nil;
 
 - (void)applicationDidFinishLaunching:(id)sender
 {
-	[ofxCocoaGLView lockSharedContext];
+	BEGIN_OPENGL();
 	
 	[self setup];
 	ofNotifySetup();
 
-	[ofxCocoaGLView unlockSharedContext];
+	END_OPENGL();
 	
 	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 	[nc removeObserver:self name:NSApplicationDidFinishLaunchingNotification object:nil];
@@ -413,7 +421,7 @@ static NSOpenGLContext *_context = nil;
 	mouseX = m.x;
 	mouseY = self.frame.size.height - m.y;
 
-	[ofxCocoaGLView lockSharedContext];
+	BEGIN_OPENGL();
 
 	GLint swapInt = 1;
 	[[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
@@ -427,7 +435,7 @@ static NSOpenGLContext *_context = nil;
 
 	setupWindowProxy(self);
 
-	[ofxCocoaGLView unlockSharedContext];
+	END_OPENGL();
 	
 	initialised = YES;
 }
@@ -457,8 +465,8 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 {
 	if ([self isVisible])
 	{
-		[ofxCocoaGLView lockSharedContext];
-
+		BEGIN_OPENGL();
+		
 		makeCurrentView(self);
 
 		{
@@ -478,16 +486,16 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 		ofViewport(0, 0, r.size.width, r.size.height);
 
 		float *bgPtr = ofBgColorPtr();
-		bool bClearAuto = ofbClearBg();
+		bool clearAuto = ofbClearBg();
 
-		if (bClearAuto || nFrameCount < 3)
+		if (clearAuto || frameCount < 3)
 		{
 			float * bgPtr = ofBgColorPtr();
 			glClearColor(bgPtr[0], bgPtr[1], bgPtr[2], bgPtr[3]);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 
-		if (bEnableSetupScreen) ofSetupScreen();
+		if (enableSetupScreen) ofSetupScreen();
 
 		[self draw];
 		ofNotifyDraw();
@@ -495,15 +503,15 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 		glFlush();
 		[[self openGLContext] flushBuffer];
 
-		[ofxCocoaGLView unlockSharedContext];
+		END_OPENGL();
 	}
 
-	nFrameCount++;
+	frameCount++;
 }
 
 - (void)reshape
 {
-	[ofxCocoaGLView lockSharedContext];
+	BEGIN_OPENGL();
 
 	makeCurrentView(self);
 
@@ -517,17 +525,17 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 	[self windowResized:r.size];
 	ofNotifyWindowResized(width, height);
 
-	[ofxCocoaGLView unlockSharedContext];
-
-	if (tracking_rect_tag)
+	if (trackingRectTag)
 	{
-		[self removeTrackingRect:tracking_rect_tag];
-		tracking_rect_tag = NULL;
+		[self removeTrackingRect:trackingRectTag];
+		trackingRectTag = NULL;
 	}
 
-	tracking_rect_tag = [self addTrackingRect:[self bounds] owner:self userData:NULL assumeInside:NO];
+	trackingRectTag = [self addTrackingRect:[self bounds] owner:self userData:NULL assumeInside:NO];
 
 	[self drawView];
+	
+	END_OPENGL();
 }
 
 #pragma mark events
