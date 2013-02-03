@@ -113,6 +113,28 @@ static void makeCurrentView(ofxCocoaGLView *view)
 		window_proxy->view = view;
 }
 
+class ScopedAutoReleasePool
+{
+public:
+	
+	ScopedAutoReleasePool()
+	{
+		pool = [[NSAutoreleasePool alloc] init];
+	}
+	
+	~ScopedAutoReleasePool()
+	{
+		[pool release];
+	}
+	
+private:
+	
+	NSAutoreleasePool *pool;
+	
+	ScopedAutoReleasePool(const ScopedAutoReleasePool&);
+	ScopedAutoReleasePool& operator=(const ScopedAutoReleasePool&);
+};
+
 static NSOpenGLContext *_context = nil;
 
 @interface ofxCocoaGLView ()
@@ -151,6 +173,8 @@ static NSOpenGLContext *_context = nil;
 
 	if (self)
 	{
+		ScopedAutoReleasePool pool;
+		
 		initialised = NO;
 		enableSetupScreen = true;
 		frameCount = 0;
@@ -222,12 +246,14 @@ static NSOpenGLContext *_context = nil;
 		[self.window setFrameUsingName:[self className] force:YES];
 		[self setFrameRate:60];
 	}
-
+	
 	return self;
 }
 
 - (void)dispose
 {
+	ScopedAutoReleasePool pool;
+	
 	if (![self isInFullScreenMode])
 		[self.window saveFrameUsingName:[self className]];
 	
@@ -275,6 +301,8 @@ static NSOpenGLContext *_context = nil;
 
 - (void)applicationDidFinishLaunching:(id)sender
 {
+	ScopedAutoReleasePool pool;
+	
 	BEGIN_OPENGL();
 	
 	[self setup];
@@ -394,6 +422,8 @@ static NSOpenGLContext *_context = nil;
 
 - (void)prepareOpenGL
 {
+	ScopedAutoReleasePool pool;
+	
 	[super prepareOpenGL];
 	[self initGL];
 	[self enableDisplayLink:NO];
@@ -465,6 +495,8 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 {
 	if ([self isVisible])
 	{
+		ScopedAutoReleasePool pool;
+		
 		BEGIN_OPENGL();
 		
 		makeCurrentView(self);
@@ -511,6 +543,8 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void)reshape
 {
+	ScopedAutoReleasePool pool;
+	
 	BEGIN_OPENGL();
 
 	makeCurrentView(self);
