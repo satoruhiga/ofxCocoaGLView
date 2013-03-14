@@ -138,10 +138,15 @@ private:
 static NSOpenGLContext *_context = nil;
 
 @interface ofxCocoaGLView ()
+
 - (void)initGL;
 - (void)drawView;
 - (void)dispose;
 - (BOOL)isVisible;
+
+- (void)saveWindowState;
+- (void)loadWindowState;
+
 @end
 
 @implementation ofxCocoaGLView
@@ -243,7 +248,10 @@ static NSOpenGLContext *_context = nil;
 			// TODO: NSWindowDidChangeScreenNotification
 		}
 		
-		[self.window setFrameUsingName:[self className] force:YES];
+		[self.window setReleasedWhenClosed:NO];
+		[self.window setHidesOnDeactivate:NO];
+		[self.window close];
+		
 		[self setFrameRate:60];
 	}
 	
@@ -255,7 +263,9 @@ static NSOpenGLContext *_context = nil;
 	ScopedAutoReleasePool pool;
 	
 	if (![self isInFullScreenMode])
-		[self.window saveFrameUsingName:[self className]];
+	{
+		[self saveWindowState];
+	}
 	
 	[self exit];
 
@@ -312,6 +322,8 @@ static NSOpenGLContext *_context = nil;
 	
 	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 	[nc removeObserver:self name:NSApplicationDidFinishLaunchingNotification object:nil];
+	
+	[self loadWindowState];
 }
 
 - (void)dealloc
@@ -808,6 +820,27 @@ static int conv_button_number(int n)
 - (BOOL)isVisible
 {
 	return self.window && [self.window isVisible];
+}
+
+- (void)saveWindowState
+{
+	[self.window saveFrameUsingName:[self className]];
+	
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	[defaults setBool:[self.window isVisible] forKey:[NSString stringWithFormat:@"%@.open", [self className]]];
+}
+
+- (void)loadWindowState
+{
+	[self.window setFrameUsingName:[self className] force:NO];
+	
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	BOOL open = [defaults boolForKey:[NSString stringWithFormat:@"%@.open", [self className]]];
+	
+	if (open)
+		[self.window makeKeyAndOrderFront:nil];
+	else
+		[self.window close];
 }
 
 @end
