@@ -835,12 +835,17 @@ static int conv_button_number(int n)
 	[self.window setFrameUsingName:[self className] force:NO];
 	
 	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-	BOOL open = [defaults boolForKey:[NSString stringWithFormat:@"%@.open", [self className]]];
+	NSString *key = [NSString stringWithFormat:@"%@.open", [self className]];
 	
-	if (open)
-		[self.window makeKeyAndOrderFront:nil];
-	else
-		[self.window close];
+	if ([[defaults dictionaryRepresentation] objectForKey:key])
+	{
+		BOOL open = [defaults boolForKey:key];
+		
+		if (open)
+			[self.window makeKeyAndOrderFront:nil];
+		else
+			[self.window close];
+	}
 }
 
 @end
