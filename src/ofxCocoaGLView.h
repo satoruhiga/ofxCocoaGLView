@@ -3,7 +3,7 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CVDisplayLink.h>
 
-@interface ofxCocoaGLView : NSOpenGLView {
+@interface ofxCocoaGLView : NSOpenGLView <NSWindowDelegate> {
 	CVDisplayLinkRef displayLink;
 	NSTimer *updateTimer;
 
@@ -30,6 +30,8 @@
 
 	float mouseX, mouseY;
 	float width, height;
+	
+	float aspect;
 }
 
 @property (assign, readonly) float mouseX;
@@ -57,6 +59,9 @@
 - (void)mouseEntered;
 - (void)mouseExited;
 
+- (void)beginWindowEvent;
+- (void)endWindowEvent;
+
 //
 
 - (void)setFrameRate:(float)framerate;
@@ -71,6 +76,8 @@
 
 - (void)enableDisplayLink:(BOOL)v;
 - (void)enableWindowEvents:(BOOL)v;
+
+- (void)setKeepAspect:(float)aspect;
 
 //
 
