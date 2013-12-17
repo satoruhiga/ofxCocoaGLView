@@ -763,7 +763,24 @@ static int conv_button_number(int n)
 {
 	const char *c = [[theEvent charactersIgnoringModifiers] UTF8String];
 	int key = c[0];
-
+	
+	switch ([theEvent keyCode]) {
+		case 123:    // Left arrow
+			key = OF_KEY_LEFT;
+			break;
+		case 124:    // Right arrow
+			key = OF_KEY_RIGHT;
+			break;
+		case 125:    // Down arrow
+			key = OF_KEY_DOWN;
+			break;
+		case 126:    // Up arrow
+			key = OF_KEY_UP;
+			break;
+		default:
+			break;
+	}
+	
 	[self beginWindowEvent];
 	
 	makeCurrentView(self);
@@ -774,6 +791,7 @@ static int conv_button_number(int n)
 		[NSApp terminate:self];
 	}
 
+	cout << "KEY FROM COCOA " << key << endl;
 	[self keyPressed:key];
 	ofNotifyKeyPressed(key);
 	
@@ -784,6 +802,23 @@ static int conv_button_number(int n)
 {
 	const char *c = [[theEvent charactersIgnoringModifiers] UTF8String];
 	int key = c[0];
+	
+	switch ([theEvent keyCode]) {
+		case 123:    // Left arrow
+			key = OF_KEY_LEFT;
+			break;
+		case 124:    // Right arrow
+			key = OF_KEY_RIGHT;
+			break;
+		case 125:    // Down arrow
+			key = OF_KEY_DOWN;
+			break;
+		case 126:    // Up arrow
+			key = OF_KEY_UP;
+			break;
+		default:
+			break;
+	}
 
 	[self beginWindowEvent];
 	
