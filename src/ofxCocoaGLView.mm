@@ -759,11 +759,39 @@ static int conv_button_number(int n)
 	[self endWindowEvent];
 }
 
+#define KEY_CASE(CODE, KEY) case CODE: key = KEY; break;
+
 - (void)keyDown:(NSEvent *)theEvent
 {
 	const char *c = [[theEvent charactersIgnoringModifiers] UTF8String];
 	int key = c[0];
-
+	
+	switch ([theEvent keyCode]) {
+		KEY_CASE(122, OF_KEY_F1);
+		KEY_CASE(120, OF_KEY_F2);
+		KEY_CASE(99, OF_KEY_F3);
+		KEY_CASE(118, OF_KEY_F4);
+		KEY_CASE(96, OF_KEY_F5);
+		KEY_CASE(97, OF_KEY_F6);
+		KEY_CASE(98, OF_KEY_F7);
+		KEY_CASE(100, OF_KEY_F8);
+		KEY_CASE(101, OF_KEY_F9);
+		KEY_CASE(109, OF_KEY_F10);
+		KEY_CASE(103, OF_KEY_F11);
+		KEY_CASE(111, OF_KEY_F12);
+		KEY_CASE(51, OF_KEY_DEL);
+		KEY_CASE(116, OF_KEY_HOME);
+		KEY_CASE(121, OF_KEY_END);
+		KEY_CASE(115, OF_KEY_PAGE_UP);
+		KEY_CASE(119, OF_KEY_PAGE_DOWN);
+		KEY_CASE(123, OF_KEY_LEFT);
+		KEY_CASE(124, OF_KEY_RIGHT);
+		KEY_CASE(125, OF_KEY_DOWN);
+		KEY_CASE(126, OF_KEY_UP);
+		default:
+			break;
+	}
+	
 	[self beginWindowEvent];
 	
 	makeCurrentView(self);
@@ -784,6 +812,32 @@ static int conv_button_number(int n)
 {
 	const char *c = [[theEvent charactersIgnoringModifiers] UTF8String];
 	int key = c[0];
+	
+	switch ([theEvent keyCode]) {
+		KEY_CASE(122, OF_KEY_F1);
+		KEY_CASE(120, OF_KEY_F2);
+		KEY_CASE(99, OF_KEY_F3);
+		KEY_CASE(118, OF_KEY_F4);
+		KEY_CASE(96, OF_KEY_F5);
+		KEY_CASE(97, OF_KEY_F6);
+		KEY_CASE(98, OF_KEY_F7);
+		KEY_CASE(100, OF_KEY_F8);
+		KEY_CASE(101, OF_KEY_F9);
+		KEY_CASE(109, OF_KEY_F10);
+		KEY_CASE(103, OF_KEY_F11);
+		KEY_CASE(111, OF_KEY_F12);
+		KEY_CASE(51, OF_KEY_DEL);
+		KEY_CASE(116, OF_KEY_HOME);
+		KEY_CASE(121, OF_KEY_END);
+		KEY_CASE(115, OF_KEY_PAGE_UP);
+		KEY_CASE(119, OF_KEY_PAGE_DOWN);
+		KEY_CASE(123, OF_KEY_LEFT);
+		KEY_CASE(124, OF_KEY_RIGHT);
+		KEY_CASE(125, OF_KEY_DOWN);
+		KEY_CASE(126, OF_KEY_UP);
+		default:
+			break;
+	}
 
 	[self beginWindowEvent];
 	
